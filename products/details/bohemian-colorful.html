@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波西米亚系列 - 彩色 | Kacvtuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .thumbnail:hover {
+            border-color: #000;
+        }
+        .selected {
+            border-color: #000;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <a href="../../index.html" class="text-3xl font-bold tracking-wider">KACVTUY</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8">
+                        <a href="../../index.html" class="hover:text-gray-600">首页</a>
+                        <a href="../../products.html" class="hover:text-gray-600">全部商品</a>
+                        <a href="#" class="hover:text-gray-600">畅销系列</a>
+                        <a href="#" class="hover:text-gray-600">关于我们</a>
+                        <a href="#" class="hover:text-gray-600">联系方式</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="languageToggle" class="hover:text-gray-600">
+                        <span class="language-text">EN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 产品详情 -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 面包屑导航 -->
+        <div class="text-sm text-gray-500 mb-8">
+            <a href="../../index.html" class="hover:text-gray-800">首页</a> &gt; 
+            <a href="../../products.html" class="hover:text-gray-800">全部商品</a> &gt; 
+            <span class="text-gray-800">波西米亚系列 - 彩色</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <!-- 左侧产品图片 -->
+            <div>
+                <div class="mb-4">
+                    <img id="mainImage" src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                         alt="波西米亚系列 - 彩色" 
+                         class="w-full rounded-lg">
+                </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                         class="w-full rounded-lg cursor-pointer thumbnail selected"
+                         onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80&fit=facearea" 
+                         class="w-full rounded-lg cursor-pointer thumbnail"
+                         onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80&fit=crop" 
+                         class="w-full rounded-lg cursor-pointer thumbnail"
+                         onclick="changeImage(this.src)">
+                    <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80&fit=center" 
+                         class="w-full rounded-lg cursor-pointer thumbnail"
+                         onclick="changeImage(this.src)">
+                </div>
+            </div>
+
+            <!-- 右侧产品信息 -->
+            <div>
+                <h1 class="text-3xl font-bold mb-4">波西米亚系列 - 彩色</h1>
+                <div class="text-2xl font-bold mb-6">¥1,599</div>
+                
+                <!-- 产品描述 -->
+                <div class="mb-6">
+                    <p class="text-gray-600">独特民族风情，为家居增添异域魅力。手工编织工艺，展现精湛技艺。</p>
+                </div>
+
+                <!-- 产品参数 -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4">产品参数</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-gray-600">材质</div>
+                        <div>混纺羊毛</div>
+                        <div class="text-gray-600">尺寸</div>
+                        <div>200 x 280 cm</div>
+                        <div class="text-gray-600">厚度</div>
+                        <div>2.0 cm</div>
+                        <div class="text-gray-600">产地</div>
+                        <div>印度</div>
+                        <div class="text-gray-600">清洗方式</div>
+                        <div>专业干洗</div>
+                        <div class="text-gray-600">适用场景</div>
+                        <div>客厅、卧室、书房</div>
+                    </div>
+                </div>
+
+                <!-- 数量选择 -->
+                <div class="mb-6">
+                    <label class="block text-gray-600 mb-2">数量</label>
+                    <div class="flex items-center">
+                        <button class="border rounded-l px-4 py-2 hover:bg-gray-100" onclick="updateQuantity(-1)">-</button>
+                        <input type="number" id="quantity" value="1" min="1" class="border-t border-b w-16 text-center py-2">
+                        <button class="border rounded-r px-4 py-2 hover:bg-gray-100" onclick="updateQuantity(1)">+</button>
+                    </div>
+                </div>
+
+                <!-- 购买按钮 -->
+                <div class="flex space-x-4">
+                    <button class="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition duration-300 flex-1">
+                        立即购买
+                    </button>
+                    <button class="bg-white text-black px-8 py-3 rounded-full border border-black hover:bg-gray-100 transition duration-300 flex-1">
+                        加入购物车
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品详细信息 -->
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold mb-8">产品详细信息</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">产品特点</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>传统手工编织，每件独一无二</li>
+                        <li>民族特色图案，富有艺术气息</li>
+                        <li>优质混纺材质，经久耐用</li>
+                        <li>天然染料，环保健康</li>
+                        <li>防滑底层，安全可靠</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">保养说明</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>建议专业干洗，避免机洗</li>
+                        <li>定期吸尘，保持清洁</li>
+                        <li>避免阳光直射，防止褪色</li>
+                        <li>定期翻转使用，延长寿命</li>
+                        <li>如有污渍，及时处理</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">关于我们</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gray-300">品牌故事</a></li>
+                        <li><a href="#" class="hover:text-gray-300">设计理念</a></li>
+                        <li><a href="#" class="hover:text-gray-300">工艺制作</a></li>
+                        <li><a href="#" class="hover:text-gray-300">可持续发展</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">客户服务</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gray-300">配送说明</a></li>
+                        <li><a href="#" class="hover:text-gray-300">退换政策</a></li>
+                        <li><a href="#" class="hover:text-gray-300">保养指南</a></li>
+                        <li><a href="#" class="hover:text-gray-300">常见问题</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li>客服电话：400-888-8888</li>
+                        <li>营业时间：9:00-21:00</li>
+                        <li>邮箱：service@kacvtuy.com</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.164 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.897 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.897-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p>&copy; 2024 Kacvtuy. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 图片切换功能
+        function changeImage(src) {
+            document.getElementById('mainImage').src = src;
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('selected');
+                if (thumb.src === src) {
+                    thumb.classList.add('selected');
+                }
+            });
+        }
+
+        // 数量更新功能
+        function updateQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            let newValue = parseInt(quantityInput.value) + change;
+            if (newValue < 1) newValue = 1;
+            quantityInput.value = newValue;
+        }
+
+        // 语言切换功能
+        const translations = {
+            zh: {
+                // ... 中文翻译
+            },
+            en: {
+                // ... 英文翻译
+            }
+        };
+
+        let currentLang = 'zh';
+
+        function toggleLanguage() {
+            // ... 语言切换逻辑
+        }
+
+        document.getElementById('languageToggle').addEventListener('click', toggleLanguage);
+    </script>
+</body>
+</html> 

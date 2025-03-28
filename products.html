@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全部商品 | Kacvtuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .product-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .cart-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+        .cart-popup.active {
+            display: block;
+            right: 0;
+        }
+        .cart-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .cart-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <a href="index.html" class="text-3xl font-bold tracking-wider">KACVTUY</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8">
+                        <a href="index.html" class="hover:text-gray-600">首页</a>
+                        <a href="products.html" class="text-gray-900 font-semibold">全部商品</a>
+                        <a href="#" class="hover:text-gray-600">畅销系列</a>
+                        <a href="#" class="hover:text-gray-600">关于我们</a>
+                        <a href="#" class="hover:text-gray-600">联系方式</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="languageToggle" class="hover:text-gray-600">
+                        <span class="language-text">EN</span>
+                    </button>
+                    <div class="relative">
+                        <button id="cartButton" class="hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span id="cartCount" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 购物车弹出框 -->
+    <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="cartPopup" class="fixed top-0 right-0 w-96 h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300">
+        <div class="p-4 border-b">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-semibold">购物车</h2>
+                <button id="closeCart" class="text-gray-500 hover:text-gray-700">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="p-4 overflow-y-auto h-[calc(100%-8rem)]">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b">
+                <div class="flex items-center">
+                    <input type="checkbox" id="selectAll" class="w-4 h-4 text-black border-gray-300 rounded focus:ring-black" onchange="toggleSelectAll()">
+                    <label for="selectAll" class="ml-2 text-sm text-gray-600">全选</label>
+                </div>
+                <button onclick="deleteSelected()" class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    删除选中
+                </button>
+            </div>
+            <div id="cartItems"></div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+            <div class="flex justify-between items-center mb-4">
+                <span class="font-semibold">总计:</span>
+                <span id="cartTotal" class="text-xl font-bold">¥0</span>
+            </div>
+            <button class="w-full bg-black text-white py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                结算
+            </button>
+        </div>
+    </div>
+
+    <!-- 产品筛选和展示区域 -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- 筛选侧边栏 -->
+            <div class="w-full md:w-64">
+                <div class="filter-section">
+                    <h3 class="text-lg font-semibold mb-4">产品分类</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">现代简约</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">波西米亚</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">北欧风格</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="filter-section mt-4">
+                    <h3 class="text-lg font-semibold mb-4">价格区间</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">¥0 - ¥1000</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">¥1000 - ¥2000</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="form-checkbox h-4 w-4 text-gray-600">
+                            <span class="ml-2">¥2000以上</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 产品展示区域 -->
+            <div class="flex-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">全部产品</h2>
+                    <select class="form-select rounded-md border-gray-300">
+                        <option>默认排序</option>
+                        <option>价格从低到高</option>
+                        <option>价格从高到低</option>
+                        <option>最新上架</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 产品卡片 1 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="现代简约地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">现代简约系列 - 米色</h3>
+                            <p class="text-gray-600 mb-4">简约大气的设计，为您的空间增添现代感。采用优质羊毛材质，触感柔软舒适。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,299</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 2 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="波西米亚风地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">波西米亚系列 - 彩色</h3>
+                            <p class="text-gray-600 mb-4">独特民族风情，为家居增添异域魅力。手工编织工艺，展现精湛技艺。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,599</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 3 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600166898405-da9535204843?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="北欧风地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">北欧风尚系列 - 灰色</h3>
+                            <p class="text-gray-600 mb-4">简约优雅的北欧设计，打造温馨空间。采用环保材质，呵护家人健康。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,899</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 4 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="几何图案地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">几何图案系列 - 黑白</h3>
+                            <p class="text-gray-600 mb-4">现代几何图案设计，展现独特艺术感。防污处理，易于清洁。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,499</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 5 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="复古风格地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">复古风格系列 - 深蓝</h3>
+                            <p class="text-gray-600 mb-4">复古优雅的设计风格，彰显品味。采用天然染料，色彩持久。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥2,199</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 6 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="儿童房地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">儿童房系列 - 卡通</h3>
+                            <p class="text-gray-600 mb-4">可爱卡通图案，为儿童房增添趣味。采用安全环保材质，呵护宝宝健康。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥999</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 7 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="客厅地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">客厅系列 - 大尺寸</h3>
+                            <p class="text-gray-600 mb-4">大尺寸设计，适合客厅使用。加厚设计，提供更好的舒适度。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥2,899</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 8 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600166898405-da9535204843?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="卧室地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">卧室系列 - 温暖</h3>
+                            <p class="text-gray-600 mb-4">温暖柔和的色调，营造舒适睡眠环境。防滑设计，安全可靠。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,799</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 9 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="书房地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">书房系列 - 简约</h3>
+                            <p class="text-gray-600 mb-4">简约设计风格，适合书房使用。防静电处理，保护电子设备。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥1,399</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 产品卡片 10 -->
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="阳台地毯" 
+                             class="w-full h-64 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">阳台系列 - 防水</h3>
+                            <p class="text-gray-600 mb-4">防水防霉设计，适合阳台使用。耐晒耐雨，持久耐用。</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-xl font-bold">¥899</p>
+                                <button class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                    加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">关于我们</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gray-300">品牌故事</a></li>
+                        <li><a href="#" class="hover:text-gray-300">设计理念</a></li>
+                        <li><a href="#" class="hover:text-gray-300">工艺制作</a></li>
+                        <li><a href="#" class="hover:text-gray-300">可持续发展</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">客户服务</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gray-300">配送说明</a></li>
+                        <li><a href="#" class="hover:text-gray-300">退换政策</a></li>
+                        <li><a href="#" class="hover:text-gray-300">保养指南</a></li>
+                        <li><a href="#" class="hover:text-gray-300">常见问题</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li>客服电话：400-888-8888</li>
+                        <li>营业时间：9:00-21:00</li>
+                        <li>邮箱：service@kacvtuy.com</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.164 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="hover:text-gray-300">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.897 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.897-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p>&copy; 2024 Kacvtuy. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+    <script src="js/cart.js"></script>
+    <script>
+        // 语言配置
+        const translations = {
+            zh: {
+                nav: {
+                    home: "首页",
+                    allProducts: "全部商品",
+                    bestSellers: "畅销系列",
+                    aboutUs: "关于我们",
+                    contact: "联系方式"
+                },
+                filter: {
+                    categories: "产品分类",
+                    modern: "现代简约",
+                    bohemian: "波西米亚",
+                    nordic: "北欧风格",
+                    priceRange: "价格区间",
+                    allProducts: "全部产品"
+                },
+                sort: {
+                    default: "默认排序",
+                    priceLowToHigh: "价格从低到高",
+                    priceHighToLow: "价格从高到低",
+                    newest: "最新上架"
+                },
+                product: {
+                    addToCart: "加入购物车",
+                    launchDate: "上架时间："
+                },
+                footer: {
+                    about: {
+                        title: "关于我们",
+                        story: "品牌故事",
+                        design: "设计理念",
+                        craft: "工艺制作",
+                        sustainability: "可持续发展"
+                    },
+                    service: {
+                        title: "客户服务",
+                        shipping: "配送说明",
+                        returns: "退换政策",
+                        care: "保养指南",
+                        faq: "常见问题"
+                    },
+                    contact: {
+                        title: "联系我们",
+                        phone: "客服电话：400-888-8888",
+                        hours: "营业时间：9:00-21:00",
+                        email: "邮箱：service@kacvtuy.com"
+                    },
+                    follow: {
+                        title: "关注我们"
+                    },
+                    rights: "保留所有权利。"
+                }
+            },
+            en: {
+                nav: {
+                    home: "Home",
+                    allProducts: "All Products",
+                    bestSellers: "Best Sellers",
+                    aboutUs: "About Us",
+                    contact: "Contact"
+                },
+                filter: {
+                    categories: "Categories",
+                    modern: "Modern",
+                    bohemian: "Bohemian",
+                    nordic: "Nordic",
+                    priceRange: "Price Range",
+                    allProducts: "All Products"
+                },
+                sort: {
+                    default: "Default",
+                    priceLowToHigh: "Price: Low to High",
+                    priceHighToLow: "Price: High to Low",
+                    newest: "Newest"
+                },
+                product: {
+                    addToCart: "Add to Cart",
+                    launchDate: "Launch Date: "
+                },
+                footer: {
+                    about: {
+                        title: "About Us",
+                        story: "Brand Story",
+                        design: "Design Philosophy",
+                        craft: "Craftsmanship",
+                        sustainability: "Sustainability"
+                    },
+                    service: {
+                        title: "Customer Service",
+                        shipping: "Shipping Info",
+                        returns: "Returns Policy",
+                        care: "Care Guide",
+                        faq: "FAQ"
+                    },
+                    contact: {
+                        title: "Contact Us",
+                        phone: "Service: 400-888-8888",
+                        hours: "Hours: 9:00-21:00",
+                        email: "Email: service@kacvtuy.com"
+                    },
+                    follow: {
+                        title: "Follow Us"
+                    },
+                    rights: "All rights reserved."
+                }
+            }
+        };
+
+        // 当前语言
+        let currentLang = 'zh';
+
+        // 获取需要翻译的元素
+        const elements = {
+            nav: document.querySelectorAll('.ml-10 a'),
+            filter: {
+                categoryTitle: document.querySelector('.filter-section h3'),
+                categories: document.querySelectorAll('.filter-section:first-child .space-y-2 span'),
+                priceTitle: document.querySelectorAll('.filter-section h3')[1],
+                prices: document.querySelectorAll('.filter-section:last-child .space-y-2 span')
+            },
+            productSection: {
+                title: document.querySelector('.flex.justify-between h2'),
+                sort: document.querySelector('select'),
+                sortOptions: document.querySelectorAll('select option')
+            },
+            footer: {
+                titles: document.querySelectorAll('footer h3'),
+                about: document.querySelectorAll('footer div:nth-child(1) li a'),
+                service: document.querySelectorAll('footer div:nth-child(2) li a'),
+                contact: document.querySelectorAll('footer div:nth-child(3) li'),
+                rights: document.querySelector('footer .border-t p')
+            }
+        };
+
+        // 切换语言函数
+        function toggleLanguage() {
+            const langButton = document.getElementById('languageToggle');
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            langButton.querySelector('.language-text').textContent = currentLang === 'zh' ? 'EN' : '中';
+            
+            // 更新导航
+            elements.nav.forEach((el, i) => {
+                const keys = ['home', 'allProducts', 'bestSellers', 'aboutUs', 'contact'];
+                el.textContent = translations[currentLang].nav[keys[i]];
+            });
+
+            // 更新筛选区域
+            elements.filter.categoryTitle.textContent = translations[currentLang].filter.categories;
+            elements.filter.categories.forEach((el, i) => {
+                const categories = ['modern', 'bohemian', 'nordic'];
+                el.textContent = translations[currentLang].filter[categories[i]];
+            });
+            elements.filter.priceTitle.textContent = translations[currentLang].filter.priceRange;
+
+            // 更新产品区域标题和排序
+            elements.productSection.title.textContent = translations[currentLang].filter.allProducts;
+            const sortOptions = ['default', 'priceLowToHigh', 'priceHighToLow', 'newest'];
+            elements.productSection.sortOptions.forEach((el, i) => {
+                el.textContent = translations[currentLang].sort[sortOptions[i]];
+            });
+
+            // 更新页脚
+            elements.footer.titles[0].textContent = translations[currentLang].footer.about.title;
+            elements.footer.titles[1].textContent = translations[currentLang].footer.service.title;
+            elements.footer.titles[2].textContent = translations[currentLang].footer.contact.title;
+            elements.footer.titles[3].textContent = translations[currentLang].footer.follow.title;
+
+            elements.footer.about.forEach((el, i) => {
+                const keys = ['story', 'design', 'craft', 'sustainability'];
+                el.textContent = translations[currentLang].footer.about[keys[i]];
+            });
+
+            elements.footer.service.forEach((el, i) => {
+                const keys = ['shipping', 'returns', 'care', 'faq'];
+                el.textContent = translations[currentLang].footer.service[keys[i]];
+            });
+
+            elements.footer.contact.forEach((el, i) => {
+                const keys = ['phone', 'hours', 'email'];
+                el.textContent = translations[currentLang].footer.contact[keys[i]];
+            });
+
+            elements.footer.rights.textContent = `© 2024 Kacvtuy. ${translations[currentLang].footer.rights}`;
+
+            // 更新产品卡片的按钮文本和上架时间标签
+            document.querySelectorAll('.product-card button').forEach(button => {
+                button.textContent = translations[currentLang].product.addToCart;
+            });
+
+            document.querySelectorAll('.product-card .text-sm').forEach(date => {
+                const originalDate = date.textContent.split('：')[1].trim();
+                date.textContent = translations[currentLang].product.launchDate + originalDate;
+            });
+        }
+
+        // 添加语言切换按钮事件监听
+        document.getElementById('languageToggle').addEventListener('click', toggleLanguage);
+
+        // 产品数据
+        const products = [
+            {
+                id: 1,
+                name: {
+                    zh: "现代简约系列 - 米色",
+                    en: "Modern Series - Beige"
+                },
+                description: {
+                    zh: "简约大气的设计，为您的空间增添现代感。采用优质羊毛材质，触感柔软舒适。",
+                    en: "Minimalist design that adds a modern touch to your space. Made with premium wool for soft, comfortable texture."
+                },
+                price: 1299,
+                category: {
+                    zh: "现代简约",
+                    en: "Modern"
+                },
+                image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-01-15"
+            },
+            {
+                id: 2,
+                name: {
+                    zh: "波西米亚系列 - 彩色",
+                    en: "Bohemian Series - Colorful"
+                },
+                description: {
+                    zh: "独特民族风情，为家居增添异域魅力。手工编织工艺，展现精湛技艺。",
+                    en: "Unique ethnic style adding exotic charm to your home. Handwoven craftsmanship showcasing exquisite artistry."
+                },
+                price: 1599,
+                category: {
+                    zh: "波西米亚",
+                    en: "Bohemian"
+                },
+                image: "https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-01-20"
+            },
+            {
+                id: 3,
+                name: {
+                    zh: "北欧风尚系列 - 灰色",
+                    en: "Nordic Series - Grey"
+                },
+                description: {
+                    zh: "简约优雅的北欧设计，打造温馨空间。采用环保材质，呵护家人健康。",
+                    en: "Simple and elegant Nordic design creating a cozy space. Made with eco-friendly materials for family health."
+                },
+                price: 1899,
+                category: {
+                    zh: "北欧风格",
+                    en: "Nordic"
+                },
+                image: "https://images.unsplash.com/photo-1600166898405-da9535204843?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-02-01"
+            },
+            {
+                id: 4,
+                name: {
+                    zh: "几何图案系列 - 黑白",
+                    en: "Geometric Series - Black & White"
+                },
+                description: {
+                    zh: "现代几何图案设计，展现独特艺术感。防污处理，易于清洁。",
+                    en: "Modern geometric pattern design with unique artistic appeal. Stain-resistant and easy to clean."
+                },
+                price: 1499,
+                category: {
+                    zh: "现代简约",
+                    en: "Modern"
+                },
+                image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-02-10"
+            },
+            {
+                id: 5,
+                name: {
+                    zh: "复古风格系列 - 深蓝",
+                    en: "Vintage Series - Navy Blue"
+                },
+                description: {
+                    zh: "复古优雅的设计风格，彰显品味。采用天然染料，色彩持久。",
+                    en: "Vintage elegant design style showing taste. Natural dyes for lasting colors."
+                },
+                price: 2199,
+                category: {
+                    zh: "波西米亚",
+                    en: "Bohemian"
+                },
+                image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-02-15"
+            },
+            {
+                id: 6,
+                name: {
+                    zh: "儿童房系列 - 卡通",
+                    en: "Kids Room Series - Cartoon"
+                },
+                description: {
+                    zh: "可爱卡通图案，为儿童房增添趣味。采用安全环保材质，呵护宝宝健康。",
+                    en: "Cute cartoon patterns adding fun to children's rooms. Safe and eco-friendly materials for baby's health."
+                },
+                price: 999,
+                category: {
+                    zh: "现代简约",
+                    en: "Modern"
+                },
+                image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-02-20"
+            },
+            {
+                id: 7,
+                name: {
+                    zh: "客厅系列 - 大尺寸",
+                    en: "Living Room Series - Large Size"
+                },
+                description: {
+                    zh: "大尺寸设计，适合客厅使用。加厚设计，提供更好的舒适度。",
+                    en: "Large size design perfect for living rooms. Thickened design for better comfort."
+                },
+                price: 2899,
+                category: {
+                    zh: "北欧风格",
+                    en: "Nordic"
+                },
+                image: "https://images.unsplash.com/photo-1594040226829-7f251ab46d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-03-01"
+            },
+            {
+                id: 8,
+                name: {
+                    zh: "卧室系列 - 温暖",
+                    en: "Bedroom Series - Warm"
+                },
+                description: {
+                    zh: "温暖柔和的色调，营造舒适睡眠环境。防滑设计，安全可靠。",
+                    en: "Warm and soft tones creating a comfortable sleeping environment. Anti-slip design for safety."
+                },
+                price: 1799,
+                category: {
+                    zh: "北欧风格",
+                    en: "Nordic"
+                },
+                image: "https://images.unsplash.com/photo-1600166898405-da9535204843?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-03-05"
+            },
+            {
+                id: 9,
+                name: {
+                    zh: "书房系列 - 简约",
+                    en: "Study Room Series - Simple"
+                },
+                description: {
+                    zh: "简约设计风格，适合书房使用。防静电处理，保护电子设备。",
+                    en: "Simple design style suitable for study rooms. Anti-static treatment protecting electronic devices."
+                },
+                price: 1399,
+                category: {
+                    zh: "现代简约",
+                    en: "Modern"
+                },
+                image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-03-10"
+            },
+            {
+                id: 10,
+                name: {
+                    zh: "阳台系列 - 防水",
+                    en: "Balcony Series - Waterproof"
+                },
+                description: {
+                    zh: "防水防霉设计，适合阳台使用。耐晒耐雨，持久耐用。",
+                    en: "Waterproof and mold-proof design for balconies. Sun and rain resistant, long-lasting durability."
+                },
+                price: 1399,
+                category: {
+                    zh: "现代简约",
+                    en: "Modern"
+                },
+                image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                launchDate: "2024-03-15"
+            }
+        ];
+
+        // 获取DOM元素
+        const productGrid = document.querySelector('.grid');
+        const categoryCheckboxes = document.querySelectorAll('.filter-section:first-child input[type="checkbox"]');
+        const priceCheckboxes = document.querySelectorAll('.filter-section:last-child input[type="checkbox"]');
+        const sortSelect = document.querySelector('select');
+
+        // 筛选产品
+        function filterProducts() {
+            const selectedCategories = Array.from(categoryCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.nextElementSibling.textContent.trim());
+
+            const selectedPriceRanges = Array.from(priceCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => {
+                    const range = checkbox.nextElementSibling.textContent.trim();
+                    if (range === '¥0 - ¥1000') return [0, 1000];
+                    if (range === '¥1000 - ¥2000') return [1000, 2000];
+                    return [2000, Infinity];
+                });
+
+            let filteredProducts = [...products];
+
+            // 按类别筛选
+            if (selectedCategories.length > 0) {
+                filteredProducts = filteredProducts.filter(product => 
+                    selectedCategories.includes(product.category[currentLang])
+                );
+            }
+
+            // 按价格筛选
+            if (selectedPriceRanges.length > 0) {
+                filteredProducts = filteredProducts.filter(product => 
+                    selectedPriceRanges.some(([min, max]) => 
+                        product.price >= min && product.price < max
+                    )
+                );
+            }
+
+            // 排序
+            const sortValue = sortSelect.value;
+            switch (sortValue) {
+                case translations[currentLang].sort.priceLowToHigh:
+                    filteredProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case translations[currentLang].sort.priceHighToLow:
+                    filteredProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case translations[currentLang].sort.newest:
+                    filteredProducts.sort((a, b) => new Date(b.launchDate) - new Date(a.launchDate));
+                    break;
+            }
+
+            renderProducts(filteredProducts);
+        }
+
+        // 添加事件监听器
+        categoryCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', filterProducts);
+        });
+
+        priceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', filterProducts);
+        });
+
+        sortSelect.addEventListener('change', filterProducts);
+
+        // 渲染产品列表
+        function renderProducts(products) {
+            const productGrid = document.querySelector('.grid');
+            productGrid.innerHTML = products.map(product => `
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-lg">
+                    <img src="${product.image}" 
+                         alt="${product.name[currentLang]}" 
+                         class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">${product.name[currentLang]}</h3>
+                        <p class="text-gray-600 mb-4">${product.description[currentLang]}</p>
+                        <div class="flex justify-between items-center">
+                            <p class="text-xl font-bold">¥${product.price.toLocaleString()}</p>
+                            <button onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})" class="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition duration-300">
+                                ${translations[currentLang].product.addToCart}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始渲染
+        renderProducts(products);
+
+        // 购物车弹出框功能
+        const cartButton = document.getElementById('cartButton');
+        const cartPopup = document.getElementById('cartPopup');
+        const cartOverlay = document.getElementById('cartOverlay');
+        const closeCart = document.getElementById('closeCart');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+
+        // 更新购物车显示
+        function updateCartDisplay() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartCount = document.getElementById('cartCount');
+            cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // 更新购物车列表
+            cartItems.innerHTML = cart.map(item => `
+                <div class="flex items-center justify-between mb-4" id="cart-item-${item.id}">
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               class="item-checkbox w-4 h-4 text-black border-gray-300 rounded focus:ring-black" 
+                               data-id="${item.id}"
+                               onchange="updateSelectAll()">
+                        <img src="${item.image}" alt="${item.name[currentLang]}" class="w-16 h-16 object-cover rounded ml-2">
+                        <div class="ml-4">
+                            <h4 class="font-semibold">${item.name[currentLang]}</h4>
+                            <p class="text-gray-600">¥${item.price.toLocaleString()}</p>
+                            <div class="flex items-center mt-1">
+                                <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" class="text-gray-500 hover:text-gray-700">-</button>
+                                <span class="mx-2">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" class="text-gray-500 hover:text-gray-700">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="text-red-500 hover:text-red-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+
+            // 更新总价
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `¥${total.toLocaleString()}`;
+        }
+
+        // 打开购物车
+        cartButton.addEventListener('click', () => {
+            cartPopup.classList.add('active');
+            cartOverlay.classList.add('active');
+            updateCartDisplay();
+        });
+
+        // 关闭购物车
+        closeCart.addEventListener('click', () => {
+            cartPopup.classList.remove('active');
+            cartOverlay.classList.remove('active');
+        });
+
+        cartOverlay.addEventListener('click', () => {
+            cartPopup.classList.remove('active');
+            cartOverlay.classList.remove('active');
+        });
+
+        // 初始化购物车显示
+        updateCartDisplay();
+    </script>
+</body>
+</html> 
