@@ -40,8 +40,8 @@ function updateCartDisplay() {
             </div>
         `).join('');
 
-        // 更新总价（只计算选中的商品）
-        updateSelectedTotal();
+        // 初始化总价为0
+        cartTotal.textContent = '¥0';
     }
 }
 
@@ -50,6 +50,11 @@ function updateSelectedTotal() {
     const selectedItems = document.querySelectorAll('.item-checkbox:checked');
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const cartTotal = document.getElementById('cartTotal');
+    
+    if (selectedItems.length === 0) {
+        cartTotal.textContent = '¥0';
+        return;
+    }
     
     const total = Array.from(selectedItems).reduce((sum, checkbox) => {
         const itemId = parseInt(checkbox.dataset.id);
@@ -130,6 +135,7 @@ function updateQuantity(productId, newQuantity) {
             item.quantity = newQuantity;
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartDisplay();
+            updateSelectedTotal();
         }
     }
 }
@@ -140,6 +146,7 @@ function removeFromCart(productId) {
     cart = cart.filter(item => item.id !== productId);
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartDisplay();
+    updateSelectedTotal();
     showNotification('商品已从购物车移除');
 }
 
