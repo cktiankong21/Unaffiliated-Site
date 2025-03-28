@@ -921,31 +921,136 @@
                 </div>
             `).join('');
 
-            // 更新总价
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // 初始化总价为0
+            const cartTotal = document.getElementById('cartTotal');
+            cartTotal.textContent = '¥0';
+        }
+
+        // 更新选中商品的总价
+        function updateSelectedTotal() {
+            const selectedItems = document.querySelectorAll('.item-checkbox:checked');
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartTotal = document.getElementById('cartTotal');
+            
+            if (selectedItems.length === 0) {
+                cartTotal.textContent = '¥0';
+                return;
+            }
+            
+            const total = Array.from(selectedItems).reduce((sum, checkbox) => {
+                const itemId = parseInt(checkbox.dataset.id);
+                const item = cart.find(item => item.id === itemId);
+                return sum + (item ? item.price * item.quantity : 0);
+            }, 0);
+            
             cartTotal.textContent = `¥${total.toLocaleString()}`;
         }
 
-        // 打开购物车
-        cartButton.addEventListener('click', () => {
-            cartPopup.classList.add('active');
-            cartOverlay.classList.add('active');
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            updateSelectedTotal();
+        }
+
+        // 更新全选状态
+        function updateSelectAll() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            selectAll.checked = allChecked;
+            updateSelectedTotal();
+        }
+
+        // 删除选中的商品
+        function deleteSelected() {
+            const selectedItems = document.querySelectorAll('.item-checkbox:checked');
+            if (selectedItems.length === 0) {
+                showNotification('请选择要删除的商品');
+                return;
+            }
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const selectedIds = Array.from(selectedItems).map(checkbox => parseInt(checkbox.dataset.id));
+            cart = cart.filter(item => !selectedIds.includes(item.id));
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
             updateCartDisplay();
-        });
+            showNotification('已删除选中的商品');
+        }
 
-        // 关闭购物车
-        closeCart.addEventListener('click', () => {
-            cartPopup.classList.remove('active');
-            cartOverlay.classList.remove('active');
-        });
+        // 更新商品数量
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+            } else {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const item = cart.find(item => item.id === productId);
+                if (item) {
+                    item.quantity = newQuantity;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    updateCartDisplay();
+                    updateSelectedTotal();
+                }
+            }
+        }
 
-        cartOverlay.addEventListener('click', () => {
-            cartPopup.classList.remove('active');
-            cartOverlay.classList.remove('active');
-        });
+        // 从购物车中移除商品
+        function removeFromCart(productId) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+            updateSelectedTotal();
+            showNotification('商品已从购物车移除');
+        }
 
-        // 初始化购物车显示
-        updateCartDisplay();
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // 页面加载时初始化购物车显示
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化购物车显示
+            updateCartDisplay();
+            
+            // 初始化购物车弹出框事件
+            const cartButton = document.getElementById('cartButton');
+            const cartPopup = document.getElementById('cartPopup');
+            const cartOverlay = document.getElementById('cartOverlay');
+            const closeCart = document.getElementById('closeCart');
+            
+            if (cartButton && cartPopup && cartOverlay && closeCart) {
+                // 打开购物车
+                cartButton.addEventListener('click', () => {
+                    cartPopup.classList.remove('translate-x-full');
+                    cartOverlay.classList.remove('hidden');
+                    updateCartDisplay();
+                });
+
+                // 关闭购物车
+                closeCart.addEventListener('click', () => {
+                    cartPopup.classList.add('translate-x-full');
+                    cartOverlay.classList.add('hidden');
+                });
+
+                cartOverlay.addEventListener('click', () => {
+                    cartPopup.classList.add('translate-x-full');
+                    cartOverlay.classList.add('hidden');
+                });
+            }
+        });
     </script>
 </body>
 </html> 
